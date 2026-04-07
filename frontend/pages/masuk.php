@@ -87,7 +87,7 @@
       width: 90px;
       height: 90px;
       object-fit: contain;
-      border-radius: 50%;
+      border-radius: 90%;
     }
 
     .app-title {
