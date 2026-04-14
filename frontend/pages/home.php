@@ -24,7 +24,7 @@
             </a>
             <div class="profile-username mt-1">
               <span class="fw-semibold text-white-50 small">
-                <?= isset($_SESSION['nama_pegawai']) ? htmlspecialchars($_SESSION['nama_pegawai']) : '' ?>
+                <?= isset($_SESSION['nama_users']) ? htmlspecialchars($_SESSION['nama_users']) : '' ?>
               </span>
             </div>
           </div>

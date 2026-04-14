@@ -24,9 +24,9 @@ $resultlevel = mysqli_query($connect, $qlevel) or die(mysqli_error($connect));
     <!-- Judul Halaman -->
     <div class="text-center py-5">
       <h2 class="fw-bold mb-2 mt-4 text-dark display-5">
-        <i class="bi bi-tags-fill text-primary me-2"></i> Halaman Barang
+        <i class="bi bi-tags-fill text-primary me-2"></i> Level
       </h2>
-      <h5 class="text-muted">Daftar level inventaris / kategori barang</h5>
+      <h5 class="text-muted">Daftar level petugas / kategori barang</h5>
     </div>
 
     <!-- Card -->

@@ -4,7 +4,7 @@ include '../../config/conection.php';
 include '../../config/escapeString.php';
 
 // Cegah akses langsung tanpa login
-if (!isset($_SESSION['id_pegawai'])) {
+if (!isset($_SESSION['id_users'])) {
     echo "
     <script>
         alert('Anda harus login terlebih dahulu!');
@@ -17,10 +17,11 @@ if (isset($_POST['tombol'])) {
     $tanggal_pinjam     = escapeString($_POST['tanggal_pinjam']);
     $tanggal_kembali    = escapeString($_POST['tanggal_kembali']);
     $status_peminjaman  = escapeString($_POST['status_peminjaman']);
-    $id_pegawai         = $_SESSION['id_pegawai']; // otomatis dari session
+    $kode_jenis         = escapeString($_POST['kode_jenis']);
+    $id_users         = $_SESSION['id_users']; // otomatis dari session
 
     // Validasi input
-    if (empty($tanggal_pinjam) || empty($tanggal_kembali) || empty($status_peminjaman)) {
+    if (empty($tanggal_pinjam) || empty($tanggal_kembali) || empty($status_peminjaman) || empty($kode_jenis)) {
         echo "<script>alert('Semua field wajib diisi!'); window.history.back();</script>";
         exit;
     }
@@ -32,11 +33,19 @@ if (isset($_POST['tombol'])) {
     }
 
     // Simpan ke database
-    $query = "INSERT INTO peminjaman (tanggal_pinjam, tanggal_kembali, status_peminjaman, id_pegawai)
-              VALUES (?, ?, ?, ?)";
+    $query = "INSERT INTO peminjaman 
+    (tanggal_pinjam, tanggal_kembali, status_peminjaman, id_users, kode_jenis)
+    VALUES (?, ?, ?, ?, ?)";
+    
     $stmt = mysqli_prepare($connect, $query);
-    mysqli_stmt_bind_param($stmt, "sssi", $tanggal_pinjam, $tanggal_kembali, $status_peminjaman, $id_pegawai);
-
+    mysqli_stmt_bind_param($stmt, "sssis", 
+        $tanggal_pinjam, 
+        $tanggal_kembali, 
+        $status_peminjaman, 
+        $id_users,
+        $kode_jenis
+    );
+    
     if (mysqli_stmt_execute($stmt)) {
         echo "
         <script>

@@ -9,9 +9,9 @@ $keyword = $_GET['keyword'] ?? '';
 $safeKeyword = mysqli_real_escape_string($connect, $keyword);
 
 // Query pegawai + filter pencarian
-$qPegawai = "SELECT * FROM pegawai";
+$qPegawai = "SELECT * FROM users";
 if (!empty($keyword)) {
-    $qPegawai .= " WHERE nama_pegawai LIKE '%$safeKeyword%' 
+    $qPegawai .= " WHERE nama_users LIKE '%$safeKeyword%' 
                  OR nip LIKE '%$safeKeyword%' 
                  OR alamat LIKE '%$safeKeyword%'";
 }
@@ -25,16 +25,16 @@ $resultPegawai = mysqli_query($connect, $qPegawai) or die(mysqli_error($connect)
     <!-- Judul Halaman -->
     <div class="text-center py-5">
       <h2 class="fw-bold mb-2 mt-4 text-dark display-5">
-        <i class="bi bi-person-badge-fill text-primary me-2"></i> Halaman Pegawai
+        <i class="bi bi-person-badge-fill text-primary me-2"></i> Tabel Akun
       </h2>
-      <h5 class="text-muted">Daftar data pegawai</h5>
+      <h5 class="text-muted">Daftar Akun Siswa</h5>
     </div>
 
-    <!-- Card -->
+    <!-- Card --> 
     <div class="card shadow-lg border-0 rounded-4">
       <div class="card-header bg-gradient d-flex justify-content-between align-items-center p-3">
           <a href="./create.php" class="btn btn-primary fw-bold d-flex align-items-center gap-2 rounded-pill px-3">
-            <i class="bi bi-plus-circle"></i> Tambah Pegawai
+            <i class="bi bi-plus-circle"></i> Tambah Akun
           </a>
       </div>
 
@@ -63,7 +63,7 @@ $resultPegawai = mysqli_query($connect, $qPegawai) or die(mysqli_error($connect)
                       <?= htmlspecialchars($item->nip) ?>
                     </span>
                   </td>
-                  <td class="fw-semibold"><?= htmlspecialchars($item->nama_pegawai) ?></td>
+                  <td class="fw-semibold"><?= htmlspecialchars($item->nama_users) ?></td>
                   <td><?= htmlspecialchars($item->alamat) ?></td>
                   <td>
                     <a href="../../action/pegawai/destroy.php?id_pegawai=<?= $item->id_pegawai ?>"

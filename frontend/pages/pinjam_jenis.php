@@ -2,8 +2,8 @@
 session_start();
 include __DIR__ . '/../../config/conection.php';
 
-// Cek apakah pegawai sudah login
-if (!isset($_SESSION['id_pegawai'])) {
+// Cek apakah users sudah login
+if (!isset($_SESSION['id_users'])) {
   echo "
   <script>
     alert('Anda harus login terlebih dahulu untuk meminjam barang!');
@@ -12,12 +12,15 @@ if (!isset($_SESSION['id_pegawai'])) {
   exit;
 }
 
-// Ambil data pegawai dari session
-$namaPegawai = $_SESSION['nama_pegawai'] ?? 'Pegawai';
-$idPegawai = $_SESSION['id_pegawai'];
+$qJenis = "SELECT * FROM jenis";
+$resultJenis = mysqli_query($connect, $qJenis);
+
+// Ambil data users dari session
+$namausers = $_SESSION['nama_users'] ?? 'users';
+$idusers = $_SESSION['id_users'];
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en">  
 
 <head>
   <meta charset="utf-8">
@@ -105,6 +108,17 @@ $idPegawai = $_SESSION['id_pegawai'];
     color: #fff !important;
     box-shadow: none !important;
   }
+  
+  /* Validasi style */
+  .was-validated .form-control:invalid,
+  .form-control.is-invalid {
+    border-color: #dc3545;
+  }
+  
+  .was-validated .form-control:valid,
+  .form-control.is-valid {
+    border-color: #198754;
+  }
 </style>
 
 </head>
@@ -122,35 +136,56 @@ $idPegawai = $_SESSION['id_pegawai'];
                   <p class="text-muted">Isi form berikut untuk menambahkan data peminjaman baru</p>
                 </div>
                 
-                <form action="../action/pinjam_jenis.php" method="POST">
+                <form action="../action/pinjam_jenis.php" method="POST" id="formPeminjaman">
                     <div class="row mb-3">
                       <div class="col-md-6">
-                        <label for="tanggal_pinjam" class="form-label">Tanggal Pinjam</label>
+                        <label for="tanggal_pinjam" class="form-label">Tanggal Pinjam <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="tanggal_pinjam" name="tanggal_pinjam" required>
+                        <div class="invalid-feedback">
+                          Tanggal pinjam harus diisi
+                        </div>
                       </div>
                       <div class="col-md-6">
-                        <label for="tanggal_kembali" class="form-label">Tanggal Kembali</label>
+                        <label for="tanggal_kembali" class="form-label">Tanggal Kembali <span class="text-danger">*</span></label>
                         <input type="date" class="form-control" id="tanggal_kembali" name="tanggal_kembali" required>
+                        <div class="invalid-feedback">
+                          Tanggal kembali harus diisi dan tidak boleh sebelum tanggal pinjam
+                        </div>
                       </div>
                     </div>
 
                     <div class="mb-3">
-                      <label for="status_peminjaman" class="form-label">Status Peminjaman</label>
-                      <select class="form-select" id="status_peminjaman" name="status_peminjaman" required>
-                        <option value="" disabled selected>Pilih Status</option>
-                        <option value="Dipinjam">Dipinjam</option>
-                        <option value="Dikembalikan">Dikembalikan</option>
+                      <label for="kode_jenis" class="form-label">Jenis Barang <span class="text-danger">*</span></label>
+                      <select class="form-select" name="kode_jenis" required>
+                        <option value="" disabled selected>Pilih Jenis</option>
+                        <?php while($j = mysqli_fetch_assoc($resultJenis)): ?>
+                          <option value="<?= htmlspecialchars($j['kode_jenis']) ?>">
+                            <?= htmlspecialchars($j['nama_jenis']) ?>
+                          </option>
+                        <?php endwhile; ?>
                       </select>
+                      <div class="invalid-feedback">
+                        Silakan pilih jenis barang
+                      </div>
                     </div>
 
-                    <!-- Nama Pegawai tampil, tapi tidak bisa diubah -->
                     <div class="mb-3">
-                      <label class="form-label">Nama</label>
-                      <input type="text" class="form-control" value="<?= htmlspecialchars($namaPegawai) ?>" readonly>
+                      <label for="status_peminjaman" class="form-label">Status Peminjaman <span class="text-danger">*</span></label>
+                      <input type="hidden" name="status_peminjaman" value="Dipinjam">
+                      <div class="invalid-feedback">
+                        Silakan pilih status peminjaman
+                      </div>
                     </div>
 
-                    <!-- ID Pegawai otomatis dikirim -->
-                    <input type="hidden" name="id_pegawai" value="<?= htmlspecialchars($idPegawai) ?>">
+                    <!-- Nama users tampil, tapi tidak bisa diubah -->
+                    <div class="mb-3">
+                      <label class="form-label">Nama users</label>
+                      <input type="text" class="form-control" value="<?= htmlspecialchars($namausers) ?>" readonly disabled>
+                      <small class="text-muted">Nama diambil dari session login</small>
+                    </div>
+
+                    <!-- ID users otomatis dikirim -->
+                    <input type="hidden" name="id_users" value="<?= htmlspecialchars($idusers) ?>">
 
                     <div class="d-flex justify-content-end gap-2 mt-4">
                       <a href="../index.php" class="btn btn-cancel">Batal</a>
@@ -167,7 +202,7 @@ $idPegawai = $_SESSION['id_pegawai'];
   <!-- Footer -->
   <footer class="bg-dark text-white text-center py-4 mt-auto">
     <div class="container">
-      <p class="mb-0">&copy; <?= date('Y') ?> Inventaris App. All rights reserved.</p>
+      <p class="mb-0">&copy; <?= date('Y') ?> App Peminjaman Barang Sekolah.</p>
     </div>
   </footer>
 
@@ -177,6 +212,51 @@ $idPegawai = $_SESSION['id_pegawai'];
 
   <script>
     AOS.init();
+    
+    // Client-side validation untuk tanggal
+    document.getElementById('formPeminjaman').addEventListener('submit', function(e) {
+        const tglPinjam = document.getElementById('tanggal_pinjam').value;
+        const tglKembali = document.getElementById('tanggal_kembali').value;
+        
+        if (tglPinjam && tglKembali) {
+            if (new Date(tglKembali) < new Date(tglPinjam)) {
+                e.preventDefault();
+                alert('Tanggal kembali tidak boleh sebelum tanggal pinjam!');
+                document.getElementById('tanggal_kembali').classList.add('is-invalid');
+                return false;
+            }
+        }
+        
+        // Reset invalid state jika valid
+        document.getElementById('tanggal_kembali').classList.remove('is-invalid');
+    });
+    
+    // Real-time validation untuk tanggal kembali
+    document.getElementById('tanggal_kembali').addEventListener('change', function() {
+        const tglPinjam = document.getElementById('tanggal_pinjam').value;
+        const tglKembali = this.value;
+        
+        if (tglPinjam && tglKembali && new Date(tglKembali) < new Date(tglPinjam)) {
+            this.classList.add('is-invalid');
+        } else {
+            this.classList.remove('is-invalid');
+        }
+    });
+    
+    // Set minimal date untuk tanggal pinjam (tidak boleh kurang dari hari ini)
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('tanggal_pinjam').setAttribute('min', today);
+    
+    // Update minimal tanggal kembali ketika tanggal pinjam berubah
+    document.getElementById('tanggal_pinjam').addEventListener('change', function() {
+        const tglKembali = document.getElementById('tanggal_kembali');
+        tglKembali.setAttribute('min', this.value);
+        
+        // Reset nilai jika tanggal kembali lebih kecil
+        if (tglKembali.value && new Date(tglKembali.value) < new Date(this.value)) {
+            tglKembali.value = '';
+        }
+    });
   </script>
 </body>
-</html>
+</html> 

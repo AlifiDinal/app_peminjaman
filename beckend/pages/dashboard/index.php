@@ -23,7 +23,7 @@ if ($_SESSION['id_level'] !== 'Admin') {
 // ===== Query total data =====
 $dataJenis = mysqli_fetch_assoc(mysqli_query($connect, "SELECT COUNT(*) AS total FROM jenis"))['total'] ?? 0;
 $dataPeminjaman = mysqli_fetch_assoc(mysqli_query($connect, "SELECT COUNT(*) AS total FROM peminjaman"))['total'] ?? 0;
-$dataInventaris = mysqli_fetch_assoc(mysqli_query($connect, "SELECT COUNT(*) AS total FROM inventaris"))['total'] ?? 0;
+$datapengembalian = mysqli_fetch_assoc(mysqli_query($connect, "SELECT COUNT(*) AS total FROM pengembalian"))['total'] ?? 0;
 
 // ===== Cek kolom tanggal =====
 $columns = [];
@@ -75,9 +75,9 @@ $qPeminjaman = "
     p.tanggal_pinjam,
     p.tanggal_kembali,
     p.status_peminjaman,
-    pg.nama_pegawai
+    pg.nama_users
   FROM peminjaman p
-  LEFT JOIN pegawai pg ON p.id_pegawai = pg.id_pegawai
+  LEFT JOIN users pg ON p.id_users = pg.id_users
   ORDER BY p.id_peminjaman DESC
 ";
 $resultPeminjaman = mysqli_query($connect, $qPeminjaman);
@@ -86,49 +86,140 @@ $resultPeminjaman = mysqli_query($connect, $qPeminjaman);
 <div class="container-fluid py-5">
 
   <!-- Header -->
-  <div class="text-center py-4">
-    <h2 class="fw-bold mb-2 mt-4 text-dark display-6">
+  <div class="text-center py-5">
+    <h2 class="fw-bold mb-2 mt-4 text-dark display-5">
       <i class="bi bi-house-door-fill me-2 text-primary"></i>Selamat Datang
     </h2>
-    <h5 class="text-muted">Sistem Inventaris Sarana dan Prasarana</h5>
+    <h5 class="text-muted">Sistem pengembalian Sarana dan Prasarana</h5>
   </div>
 
-  <!-- Statistik Kartu -->
-  <div class="row g-4 justify-content-center mb-5">
-    <div class="col-sm-6 col-md-4 col-lg-3">
-      <a href="../jenis/index.php" class="text-decoration-none">
-        <div class="card dashboard-card bg-gradient-primary text-white text-center p-4 border-0 rounded-4 shadow-hover">
-          <div class="card-icon bg-white text-primary mx-auto mb-3">
-            <i class="bi bi-box-seam"></i>
-          </div>
-          <h3 class="fw-bold"><?= $dataJenis ?></h3>
-          <p class="small opacity-75 mb-0">Total jenis barang</p>
-        </div>
-      </a>
-    </div>
+ <div class="row g-3 mb-4">
 
-    <div class="col-sm-6 col-md-4 col-lg-3">
-      <a href="../peminjaman/index.php" class="text-decoration-none">
-        <div class="card dashboard-card bg-gradient-success text-white text-center p-4 border-0 rounded-4 shadow-hover">
-          <div class="card-icon bg-white text-success mx-auto mb-3">
-            <i class="bi bi-arrow-left-right"></i>
-          </div>
-          <h3 class="fw-bold"><?= $dataPeminjaman ?></h3>
-          <p class="small opacity-75 mb-0">Total transaksi peminjaman</p>
+  <!-- Jenis -->
+  <div class="col-md-4">
+    <a href="../jenis/index.php" class="text-decoration-none text-dark">
+      <div class="card shadow-sm border-0 p-3 text-center h-100">
+        <div class="mb-2 text-primary fs-4">
+          <i class="bi bi-box-seam"></i>
         </div>
-      </a>
-    </div>
+        <h4 class="fw-bold mb-1"><?= $dataJenis ?></h4>
+        <small class="text-muted">Total Jenis Barang</small>
+      </div>
+    </a>
+  </div>
 
-    <div class="col-sm-6 col-md-4 col-lg-3">
-      <a href="../inventaris/index.php" class="text-decoration-none">
-        <div class="card dashboard-card bg-gradient-warning text-dark text-center p-4 border-0 rounded-4 shadow-hover">
-          <div class="card-icon bg-dark text-warning mx-auto mb-3">
-            <i class="bi bi-cash-stack"></i>
-          </div>
-          <h3 class="fw-bold"><?= $dataInventaris ?></h3>
-          <p class="small opacity-75 mb-0">Total barang inventaris</p>
+  <!-- Peminjaman -->
+  <div class="col-md-4">
+    <a href="../peminjaman/index.php" class="text-decoration-none text-dark">
+      <div class="card shadow-sm border-0 p-3 text-center h-100">
+        <div class="mb-2 text-success fs-4">
+          <i class="bi bi-arrow-left-right"></i>
         </div>
-      </a>
+        <h4 class="fw-bold mb-1"><?= $dataPeminjaman ?></h4>
+        <small class="text-muted">Total Peminjaman</small>
+      </div>
+    </a>
+  </div>
+
+  <!-- Pengembalian -->
+  <div class="col-md-4">
+    <a href="../pengembalian/index.php" class="text-decoration-none text-dark">
+      <div class="card shadow-sm border-0 p-3 text-center h-100">
+        <div class="mb-2 text-warning fs-4">
+          <i class="bi bi-cash-stack"></i>
+        </div>
+        <h4 class="fw-bold mb-1"><?= $datapengembalian ?></h4>
+        <small class="text-muted">Total Pengembalian</small>
+      </div>
+    </a>
+  </div>
+
+</div>
+
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card card-round">
+        <div class="card-header">
+          <div class="card-head-row">
+            <div class="card-title">User Statistics</div>
+            <div class="card-tools">
+              <a
+                href="#"
+                class="btn btn-label-success btn-round btn-sm me-2"
+              >
+                <span class="btn-label">
+                  <i class="fa fa-pencil"></i>
+                </span>
+                Export
+              </a>
+              <a href="#" class="btn btn-label-info btn-round btn-sm">
+                <span class="btn-label">
+                  <i class="fa fa-print"></i>
+                </span>
+                Print
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="chart-container" style="min-height: 375px">
+            <canvas id="statisticsChart"></canvas>
+          </div>
+          <div id="myChartLegend"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card card-primary card-round">
+        <div class="card-header">
+          <div class="card-head-row">
+            <div class="card-title">Daily Sales</div>
+            <div class="card-tools">
+              <div class="dropdown">
+                <button
+                  class="btn btn-sm btn-label-light dropdown-toggle"
+                  type="button"
+                  id="dropdownMenuButton"
+                  data-bs-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  Export
+                </button>
+                <div
+                  class="dropdown-menu"
+                  aria-labelledby="dropdownMenuButton"
+                >
+                  <a class="dropdown-item" href="#">Action</a>
+                  <a class="dropdown-item" href="#">Another action</a>
+                  <a class="dropdown-item" href="#"
+                    >Something else here</a
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-category">March 25 - April 02</div>
+        </div>
+        <div class="card-body pb-0">
+          <div class="mb-4 mt-2">
+            <h1>$4,578.58</h1>
+          </div>
+          <div class="pull-in">
+            <canvas id="dailySalesChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="card card-round">
+        <div class="card-body pb-0">
+          <div class="h1 fw-bold float-end text-primary">+5%</div>
+          <h2 class="mb-2">17</h2>
+          <p class="text-muted">Users online</p>
+          <div class="pull-in sparkline-fix">
+            <div id="lineChart"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -159,7 +250,7 @@ $resultPeminjaman = mysqli_query($connect, $qPeminjaman);
             ?>
             <tr>
               <td><?= $no++ ?></td>
-              <td><?= htmlspecialchars($row['nama_pegawai'] ?? '-') ?></td>
+              <td><?= htmlspecialchars($row['nama_users'] ?? '-') ?></td>
               <td><?= htmlspecialchars($row['tanggal_pinjam']) ?></td>
               <td><?= htmlspecialchars($row['tanggal_kembali']) ?></td>
               <td>
@@ -236,14 +327,7 @@ $(document).ready(function () {
 </script>
 
 <style>
-  .bg-gradient-primary { background: linear-gradient(135deg, #5b6cf7, #3a45c4); }
-  .bg-gradient-success { background: linear-gradient(135deg, #00c6a7, #1eae98); }
-  .bg-gradient-warning { background: linear-gradient(135deg, #ffb75e, #ed8f03); }
-  .dashboard-card {
-    transition: all 0.4s ease;
-    position: relative;
-    overflow: hidden;
-  }
+  
   .dashboard-card::after {
     content: '';
     position: absolute;

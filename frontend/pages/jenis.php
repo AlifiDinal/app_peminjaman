@@ -5,6 +5,10 @@ include __DIR__ . '/../../config/conection.php';
 $keyword = $_GET['keyword'] ?? '';
 $safeKeyword = mysqli_real_escape_string($connect, $keyword);
 
+// Cek apakah user sudah login
+$isLoggedIn = isset($_SESSION['id_users']);
+$idUsers = $isLoggedIn ? $_SESSION['id_users'] : null;
+
 // Query data barang (jenis)
 $qJenis = "SELECT * FROM jenis";
 if (!empty($keyword)) {
@@ -15,6 +19,18 @@ $resultJenis = mysqli_query($connect, $qJenis);
 
 if (!$resultJenis) {
     die("Query error: " . mysqli_error($connect));
+}
+
+// Jika user login, cek peminjaman aktif untuk setiap jenis barang
+$activeLoans = [];
+if ($isLoggedIn) {
+    $qActiveLoans = "SELECT kode_jenis FROM peminjaman 
+                     WHERE id_users = $idUsers 
+                     AND status_peminjaman = 'Dipinjam'";
+    $resultActive = mysqli_query($connect, $qActiveLoans);
+    while ($loan = mysqli_fetch_object($resultActive)) {
+        $activeLoans[] = $loan->kode_jenis;
+    }
 }
 ?>
 
@@ -48,7 +64,10 @@ if (!$resultJenis) {
     <div class="row gy-4 justify-content-center">
 
       <?php if (mysqli_num_rows($resultJenis) > 0): ?>
-        <?php while ($item = mysqli_fetch_object($resultJenis)): ?>
+        <?php while ($item = mysqli_fetch_object($resultJenis)): 
+          // Cek apakah user sedang meminjam barang ini
+          $isCurrentlyBorrowed = in_array($item->kode_jenis, $activeLoans);
+        ?>
           <div class="col-xl-3 col-lg-4 col-md-6 d-flex align-items-stretch" data-aos="fade-up" data-aos-delay="100">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden w-100 hover-card">
               
@@ -65,6 +84,14 @@ if (!$resultJenis) {
                     #<?= htmlspecialchars($item->kode_jenis ?? '-') ?>
                   </span>
                 </div>
+                <!-- Badge status jika sedang dipinjam -->
+                <?php if ($isLoggedIn && $isCurrentlyBorrowed): ?>
+                  <div class="position-absolute bottom-0 start-0 m-2">
+                    <span class="badge bg-warning text-dark shadow-sm px-3 py-2">
+                      <i class="bi bi-clock-history me-1"></i> Sedang Dipinjam
+                    </span>
+                  </div>
+                <?php endif; ?>
               </div>
 
               <!-- Info Barang -->
@@ -76,18 +103,34 @@ if (!$resultJenis) {
                   <?= htmlspecialchars($item->keterangan ?: 'Tidak ada keterangan') ?>
                 </p>
 
-                <!-- Tombol Aksi -->
+                <!-- Tombol Aksi Dinamis -->
                 <div class="d-flex justify-content-center gap-2">
-                  <?php if (isset($_SESSION['id_pegawai'])): ?>
-                    <a href="./pages/pinjam_jenis.php?id=<?= $item->id_jenis ?>" 
-                       class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
-                      <i class="bi bi-box-arrow-in-down me-1"></i> Pinjam
-                    </a>
-                  <?php else: ?>
+
+                  <?php if (!$isLoggedIn): ?>
+                    <!-- Belum login -->
                     <a href="./pages/masuk.php" 
-                       class="btn btn-outline-secondary rounded-pill px-4 py-2 shadow-sm">
+                      class="btn btn-outline-secondary rounded-pill px-4 py-2 shadow-sm">
                       <i class="bi bi-lock me-1"></i> Masuk untuk Meminjam
                     </a>
+
+                  <?php else: ?>
+                    
+                    <?php if ($isCurrentlyBorrowed): ?>
+                      <!-- Sudah meminjam → hanya bisa kembalikan -->
+                      <a href="./pages/kembalikan.php?kode_jenis=<?= $item->kode_jenis ?>" 
+                        class="btn btn-success rounded-pill px-4 py-2 shadow-sm"
+                        onclick="return confirm('Apakah Anda yakin ingin mengembalikan barang <?= htmlspecialchars($item->nama_jenis) ?>?')">
+                        <i class="bi bi-arrow-return-left me-1"></i> Kembalikan
+                      </a>
+
+                    <?php else: ?>
+                      <!-- Sudah login & belum meminjam → bisa pinjam -->
+                      <a href="./pages/pinjam_jenis.php?kode_jenis=<?= $item->kode_jenis ?>" 
+                        class="btn btn-primary rounded-pill px-4 py-2 shadow-sm">
+                        <i class="bi bi-box-arrow-in-down me-1"></i> Pinjam
+                      </a>
+
+                    <?php endif; ?>
                   <?php endif; ?>
                 </div>
               </div>
@@ -142,6 +185,17 @@ if (!$resultJenis) {
   }
   .btn-primary:hover {
     background: linear-gradient(135deg, #001aff, #0059ff);
+    transform: scale(1.05);
+  }
+  
+  /* Tombol kembali */
+  .btn-success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    transition: 0.3s;
+  }
+  .btn-success:hover {
+    background: linear-gradient(135deg, #218838, #1ba87e);
     transform: scale(1.05);
   }
 </style>

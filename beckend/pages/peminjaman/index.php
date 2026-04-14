@@ -9,18 +9,23 @@ $keyword = $_GET['keyword'] ?? '';
 $safeKeyword = mysqli_real_escape_string($connect, $keyword);
 
 // Query Peminjaman + filter pencarian
-$qPeminjaman = "
-  SELECT p.*, pg.nama_pegawai 
-  FROM peminjaman p
-  LEFT JOIN pegawai pg ON p.id_pegawai = pg.id_pegawai
+$qPeminjaman = "SELECT 
+    p.*, 
+    pg.nama_users,
+    j.nama_jenis
+FROM peminjaman p
+LEFT JOIN users pg ON p.id_users = pg.id_users
+LEFT JOIN jenis j ON p.kode_jenis = j.kode_jenis
 ";
 
 if (!empty($keyword)) {
-    $qPeminjaman .= " WHERE id_peminjaman LIKE '%$safeKeyword%' 
-                 OR tanggal_pinjam LIKE '%$safeKeyword%' 
-                 OR tanggal_kembali LIKE '%$safeKeyword%'
-                 OR status_peminjaman LIKE '%$safeKeyword%'
-                 OR nama_pegawai LIKE '%$safeKeyword%'";
+    $qPeminjaman .= " WHERE 
+        p.id_peminjaman LIKE '%$safeKeyword%' 
+        OR p.tanggal_pinjam LIKE '%$safeKeyword%' 
+        OR p.tanggal_kembali LIKE '%$safeKeyword%'
+        OR p.status_peminjaman LIKE '%$safeKeyword%'
+        OR pg.nama_users LIKE '%$safeKeyword%'
+        OR j.nama_jenis LIKE '%$safeKeyword%'";
 }
 
 
@@ -47,8 +52,10 @@ $resultPeminjaman = mysqli_query($connect, $qPeminjaman) or die(mysqli_error($co
             <thead class="table-light">
               <tr>
                 <th>No</th>
+                <th>users</th>
                 <th>Tanggal Pinjam</th>
                 <th>Tanggal Kembali</th>
+                <th>Kode Barang</th>
                 <th>Setatus</th>
                 <th>Aksi</th>
               </tr>
@@ -61,15 +68,13 @@ $resultPeminjaman = mysqli_query($connect, $qPeminjaman) or die(mysqli_error($co
               ?>
                 <tr>
                   <td><?= $no ?></td>
+                  <td><?= htmlspecialchars($item->nama_users) ?></td>
                   <td><?= htmlspecialchars($item->tanggal_pinjam) ?></td>
                   <td><?= htmlspecialchars($item->tanggal_kembali) ?></td>
+                  <td><?= htmlspecialchars($item->nama_jenis) ?></td>
                   <td class="fw-semibold"><?= htmlspecialchars($item->status_peminjaman) ?></td>
                   <td>
-                    <a href="./detail.php?id_peminjaman=<?= $item->id_peminjaman ?>" 
-                      class="btn btn-sm btn-outline-info me-1 shadow-sm">
-                      <i class="bi bi-info-circle"></i>
-                    </a>
-                    <a href="../../action/Peminjaman/destroy.php?id_peminjaman=<?= $item->id_peminjaman ?>"
+                    <a href="../../action/peminjaman/destroy.php?id_peminjaman=<?= $item->id_peminjaman ?>"
                        class="btn btn-sm btn-outline-danger shadow-sm"
                        onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                       <i class="bi bi-trash"></i>

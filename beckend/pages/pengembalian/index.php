@@ -4,41 +4,42 @@ include '../../partials/sidebar.php';
 include '../../partials/navbar.php';
 include '../../../config/conection.php';
 
-// Ambil keyword untuk pencarian
+// Ambil keyword dari GET
 $keyword = $_GET['keyword'] ?? '';
 $safeKeyword = mysqli_real_escape_string($connect, $keyword);
 
-// Query inventaris + relasi
-$qInventaris = "
-    SELECT 
-        i.id_inventaris,
-        i.nama,
-        i.kondisi,
-        i.keterangan,
-        i.jumlah,
-        i.tanggal_register,
-        i.kode_inventaris,
-        j.nama_jenis,
-        r.nama_ruang,
-        p.nama_petugas
-    FROM inventaris i
-    LEFT JOIN jenis j ON i.id_jenis = j.id_jenis
-    LEFT JOIN ruang r ON i.id_ruang = r.id_ruang
-    LEFT JOIN petugas p ON i.id_petugas = p.id_petugas
+// Query Pengembalian + filter pencarian
+$qPengembalian = "SELECT 
+    pg.*, 
+    p.id_peminjaman,
+    p.tanggal_pinjam,
+    p.tanggal_kembali,
+    p.status_peminjaman,
+    u.nama_users,
+    j.nama_jenis,
+    pt.nama_petugas
+FROM pengembalian pg
+LEFT JOIN peminjaman p ON pg.id_peminjaman = p.id_peminjaman
+LEFT JOIN users u ON p.id_users = u.id_users
+LEFT JOIN jenis j ON p.kode_jenis = j.kode_jenis
+LEFT JOIN petugas pt ON pg.id_petugas = pt.id_petugas
 ";
 
 if (!empty($keyword)) {
-    $qInventaris .= "
-        WHERE i.nama LIKE '%$safeKeyword%'
-        OR i.kode_inventaris LIKE '%$safeKeyword%'
+    $qPengembalian .= " WHERE 
+        pg.id_pengembalian LIKE '%$safeKeyword%' 
+        OR pg.tanggal_kembali_real LIKE '%$safeKeyword%' 
+        OR pg.kondisi_barang LIKE '%$safeKeyword%'
+        OR pg.denda LIKE '%$safeKeyword%'
+        OR u.nama_users LIKE '%$safeKeyword%'
         OR j.nama_jenis LIKE '%$safeKeyword%'
-        OR r.nama_ruang LIKE '%$safeKeyword%'
-        OR p.nama_petugas LIKE '%$safeKeyword%'
+        OR pt.nama_petugas LIKE '%$safeKeyword%'
     ";
 }
 
-$qInventaris .= " ORDER BY i.id_inventaris DESC";
-$resultInventaris = mysqli_query($connect, $qInventaris) or die(mysqli_error($connect));
+
+$resultPengembalian = mysqli_query($connect, $qPengembalian) or die(mysqli_error($connect));
+
 ?>
 
 <div class="container-fluid">
@@ -47,58 +48,46 @@ $resultInventaris = mysqli_query($connect, $qInventaris) or die(mysqli_error($co
     <!-- Judul Halaman -->
     <div class="text-center py-5">
       <h2 class="fw-bold mb-2 mt-4 text-dark display-5">
-        <i class="bi bi-box-seam text-primary me-2"></i> Halaman Pengembalian 
+        <i class="bi bi-tags-fill text-primary me-2"></i> Halaman Pengembalian
       </h2>
-      <h5 class="text-muted">Daftar Pengembalian lengkap dengan jenis, ruang, dan petugas</h5>
+      <h5 class="text-muted">Daftar Pengembalian inventaris / kategori Pengembalian</h5>
     </div>
 
     <!-- Card -->
     <div class="card shadow-lg border-0 rounded-4">
-      <div class="card-header bg-gradient d-flex justify-content-between align-items-center p-3">
-        <a href="./create.php" class="btn btn-primary fw-bold d-flex align-items-center gap-2 rounded-pill px-3">
-          <i class="bi bi-plus-circle"></i> Tambah Pengembalian
-        </a>
-      </div>
-
       <div class="card-body">
         <div class="table-responsive">
-          <table id="dataTable" class="table table-hover align-middle text-center">
+          <table id="DataTable" class="table table-hover align-middle text-center">
             <thead class="table-light">
               <tr>
                 <th>No</th>
                 <th>Kode Pengembalian</th>
-                <th>Nama</th>
-                <th>Jenis</th>
-                <th>Tanggal</th>
-                <th>Petugas</th>
+                <th>Id Peminjaman</th>
+                <th>Kondisi Barang</th>
+                <th>Denda</th>
                 <th>Aksi</th>
               </tr>
             </thead>
             <tbody>
               <?php
               $no = 1;
-              if (mysqli_num_rows($resultInventaris) > 0):
-                while ($item = $resultInventaris->fetch_object()):
+              if (mysqli_num_rows($resultPengembalian) > 0):
+                while ($item = $resultPengembalian->fetch_object()):
               ?>
                 <tr>
                   <td><?= $no ?></td>
-                  <td><span class="badge bg-info text-dark px-3 py-2"><?= htmlspecialchars($item->kode_inventaris) ?></span></td>
-                  <td class="fw-semibold"><?= htmlspecialchars($item->nama) ?></td>
-                  <td><?= htmlspecialchars($item->nama_jenis ?? '-') ?></td>
-                  <td><?= htmlspecialchars($item->tanggal_register) ?></td>
-                  <td class="fw-semibold"><?= htmlspecialchars($item->nama_petugas ?? '-') ?></td>
+                  <td><?= htmlspecialchars($item->id_pengembalian) ?></td>
+                  <td><?= htmlspecialchars($item->id_peminjaman) ?></td>
+                  <td><?= htmlspecialchars($item->kondisi_barang) ?></td>
+                  <td><?= htmlspecialchars($item->denda) ?></td>
                   <td>
-                    <a href="./edit.php?id_inventaris=<?= $item->id_inventaris ?>" 
-                       class="btn btn-sm btn-outline-warning me-1 shadow-sm" title="Edit">
-                      <i class="bi bi-pencil-square"></i>
-                    </a>
-                    <a href="./detail.php?id_inventaris=<?= $item->id_inventaris ?>" 
+                    <a href="./detail.php?id_pengembalian=<?= $item->id_pengembalian ?>" 
                       class="btn btn-sm btn-outline-info me-1 shadow-sm">
                       <i class="bi bi-info-circle"></i>
                     </a>
-                    <a href="../../action/inventaris/destroy.php?id_inventaris=<?= $item->id_inventaris ?>"
+                    <a href="../../action/pengembalian/destroy.php?id_pengembalian=<?= $item->id_pengembalian ?>"
                        class="btn btn-sm btn-outline-danger shadow-sm"
-                       onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')" title="Hapus">
+                       onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
                       <i class="bi bi-trash"></i>
                     </a>
                   </td>
@@ -109,7 +98,7 @@ $resultInventaris = mysqli_query($connect, $qInventaris) or die(mysqli_error($co
               else:
               ?>
                 <tr>
-                  <td colspan="10" class="text-center text-muted">Tidak ada data ditemukan</td>
+                  <td colspan="5" class="text-center text-muted">Tidak ada data ditemukan</td>
                 </tr>
               <?php endif; ?>
             </tbody>
@@ -121,14 +110,14 @@ $resultInventaris = mysqli_query($connect, $qInventaris) or die(mysqli_error($co
   </div>
 </div>
 
-<!-- DataTables -->
+<!-- DataTables Style & Script -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 
 <script>
   $(document).ready(function () {
-    $('#dataTable').DataTable({
+    $('#DataTable').DataTable({
       language: {
         lengthMenu: "Tampilkan _MENU_ data per halaman",
         zeroRecords: "Tidak ada data ditemukan",
@@ -147,6 +136,7 @@ $resultInventaris = mysqli_query($connect, $qInventaris) or die(mysqli_error($co
   });
 </script>
 
+<!-- Custom Style -->
 <style>
   .btn-purple {
     background: linear-gradient(135deg, #6f42c1, #9d6bff);

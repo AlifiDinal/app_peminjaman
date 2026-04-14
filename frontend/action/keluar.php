@@ -1,20 +1,37 @@
 <?php
-// Pastikan session aktif dulu
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Hapus semua session yang digunakan saat login
-unset($_SESSION['nama_pegawai']);
+include '../../config/conection.php';
+
+// ===== 🔥 TAMBAHAN: LOG AKTIVITAS LOGOUT =====
+if (isset($_SESSION['id_users'])) {
+
+    $id_users   = $_SESSION['id_users'];
+    $ip_address = $_SERVER['REMOTE_ADDR'];
+    $user_agent = $_SERVER['HTTP_USER_AGENT'];
+
+    $aktivitas  = "Logout";
+    $keterangan = "User keluar dari sistem";
+
+    $log = "INSERT INTO aktivitas_users 
+            (id_users, ip_address, users_agent, aktivitas, keterangan, created_at)
+            VALUES 
+            ('$id_users', '$ip_address', '$user_agent', '$aktivitas', '$keterangan', NOW())";
+
+    mysqli_query($connect, $log) or die("Gagal simpan log logout: " . mysqli_error($connect));
+}
+
+// ===== HAPUS SESSION =====
+unset($_SESSION['nama_users']);
 unset($_SESSION['nip']);
+unset($_SESSION['id_users']);
 
-// Atau bisa juga langsung kosongkan semua session
 session_unset();
-
-// Hancurkan session di server
 session_destroy();
 
-// Hapus cookie session di browser (biar benar-benar bersih)
+// ===== HAPUS COOKIE =====
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
@@ -23,7 +40,7 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// Arahkan user ke halaman login
+// ===== REDIRECT =====
 echo "
     <script>
         alert('Anda telah berhasil keluar dari sistem.');

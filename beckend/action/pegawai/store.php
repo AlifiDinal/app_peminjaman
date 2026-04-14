@@ -29,7 +29,7 @@ if ($nama_pegawai === '' || $nip === '' || $alamat === '') {
 }
 
 // Cek apakah NIP sudah ada
-$cekSql = "SELECT id_pegawai FROM pegawai WHERE nip = ? LIMIT 1";
+$cekSql = "SELECT id_pegawai FROM users WHERE nip = ? LIMIT 1";
 if ($cekStmt = mysqli_prepare($connect, $cekSql)) {
     mysqli_stmt_bind_param($cekStmt, "s", $nip);
     mysqli_stmt_execute($cekStmt);
@@ -55,7 +55,7 @@ if ($cekStmt = mysqli_prepare($connect, $cekSql)) {
 }
 
 // Jika belum ada, lakukan insert
-$insertSql = "INSERT INTO pegawai (nama_pegawai, nip, alamat) VALUES (?, ?, ?)";
+$insertSql = "INSERT INTO users (nama_pegawai, nip, alamat) VALUES (?, ?, ?)";
 if ($insertStmt = mysqli_prepare($connect, $insertSql)) {
     // jika kamu punya escapeString dan ingin menggunakannya untuk output html, bisa:
     // $nama_pegawai = escapeString($nama_pegawai);

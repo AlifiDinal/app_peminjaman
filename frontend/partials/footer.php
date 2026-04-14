@@ -34,9 +34,9 @@
     <!-- Garis & Hak Cipta -->
     <hr class="border-secondary mt-4">
     <div class="text-center">
-      <p class="mb-0">© <?= date("Y") ?> <strong class="sitename">SMK Inventaris</strong>. Semua Hak Dilindungi.</p>
+      <p class="mb-0">© <?= date("Y") ?> <strong class="sitename">APK Peminjaman</strong>. Semua Hak Dilindungi.</p>
       <small>Desain oleh 
-        <a href="#" class="text-primary text-decoration-none">Alif.D</a>
+        <a href="#" class="text-primary text-decoration-none">Alif.D.M </a>
       </small>
     </div>
   </div>

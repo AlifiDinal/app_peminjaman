@@ -1,6 +1,5 @@
 <?php
-// Deteksi halaman aktif
-$current_page = basename($_SERVER['PHP_SELF']);
+$current_folder = basename(dirname($_SERVER['PHP_SELF']));
 
   if (session_status() === PHP_SESSION_NONE) {
         session_start();
@@ -22,7 +21,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
       </div>
 
       <!-- App name -->
-      <h6 class="mb-1 text-white mt-2 fw-bold letter-spacing">INVENTARIS APP</h6>
+      <h6 class="mb-1 text-white mt-2 fw-bold letter-spacing">APP Peminjaman</h6>
 
       <!-- User role -->
       <div class="profile-username mt-1">
@@ -39,7 +38,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
             <!-- Dashboard -->
             <?php if ($_SESSION['id_level'] === 'Admin'): ?>
-            <li class="nav-item <?= ($current_page == 'index.php' && strpos($_SERVER['REQUEST_URI'], 'dashboard') !== false) ? 'active' : '' ?>"> 
+            <li class="nav-item <?= ($current_folder == 'dashboard') ? 'active' : '' ?>">
                 <a href="../dashboard/index.php" class="d-flex align-items-center text-white px-2 py-2"> 
                   <i class="fas fa-tachometer-alt me-3"></i> 
                   <p class="mb-0">Dashboard</p> 
@@ -58,68 +57,43 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
             <!-- Dropdown Data Master (Gabungan Barang & Peminjaman) -->
             <li class="nav-item">
-              <a class="d-flex align-items-center px-3 py-3 collapsed" 
-                data-bs-toggle="collapse" 
-                href="#dataMasterMenu" 
-                role="button" 
-                aria-expanded="<?= (
-                    strpos($_SERVER['REQUEST_URI'], 'jenis') !== false || 
-                    strpos($_SERVER['REQUEST_URI'], 'inventaris') !== false || 
-                    strpos($_SERVER['REQUEST_URI'], 'peminjaman') !== false || 
-                    strpos($_SERVER['REQUEST_URI'], 'ruang') !== false || 
-                    strpos($_SERVER['REQUEST_URI'], 'detail_pinjam') !== false
-                  ) ? 'true' : 'false' ?>" 
-                aria-controls="dataMasterMenu">
+              <a class="d-flex align-items-center px-3 py-3 collapsed"
+                data-bs-toggle="collapse"
+                href="#dataMasterMenu"
+                role="button"
+                aria-expanded="<?= in_array($current_folder, ['jenis','peminjaman','pengembalian']) ? 'true' : 'false' ?>"
+              >
                 <i class="fas fa-database me-3"></i>
                 <p class="mb-0">Data Master</p>
                 <i class="fas fa-caret-down ms-auto small rotate-icon"></i>
               </a>
 
-              <div class="collapse <?= (
-                    strpos($_SERVER['REQUEST_URI'], 'jenis') !== false || 
-                    strpos($_SERVER['REQUEST_URI'], 'inventaris') !== false || 
-                    strpos($_SERVER['REQUEST_URI'], 'peminjaman') !== false || 
-                    strpos($_SERVER['REQUEST_URI'], 'ruang') !== false || 
-                    strpos($_SERVER['REQUEST_URI'], 'detail_pinjam') !== false
-                  ) ? 'show' : '' ?>" id="dataMasterMenu">
+              <div class="collapse <?= in_array($current_folder, ['jenis','peminjaman','pengembalian']) ? 'show' : '' ?>" id="dataMasterMenu">
                   
                 <ul class="nav flex-column ms-4 border-start border-light border-opacity-25 ps-3">
 
                   <!-- Jenis -->
                    <?php if ($_SESSION['id_level'] === 'Admin'): ?>
-                  <li class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], 'jenis') !== false) ? 'active' : '' ?>">
+                  <li class="nav-item <?= ($current_folder == 'jenis') ? 'active' : '' ?>">
                     <a href="../jenis/index.php" class="d-flex align-items-center px-3 py-2">
                       <i class="fas fa-box me-2"></i>
                       <p class="mb-0">Jenis Barang</p>
                     </a>
                   </li>
-                  
-                  <li class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], 'ruang') !== false) ? 'active' : '' ?>">
-                    <a href="../ruang/index.php" class="d-flex align-items-center px-3 py-2">
-                      <i class="fas fa-door-open me-2"></i>
-                      <p class="mb-0">Ruang</p>
-                    </a>
-                  </li>
-
-                  <li class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], 'detail_pinjam') !== false) ? 'active' : '' ?>">
-                    <a href="../detail_pinjam/index.php" class="d-flex align-items-center px-3 py-2">
-                      <i class="fas fa-list-alt me-2"></i>
-                      <p class="mb-0">Detail Peminjaman</p>
-                    </a>
-                  </li>
+              
                   <?php endif; ?>
 
                   <!-- Peminjaman --> 
                 <?php if (in_array($_SESSION['id_level'], ['Admin','operator'])): ?>  
-                  <li class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], 'peminjaman') !== false) ? 'active' : '' ?>">
+                 <li class="nav-item <?= ($current_folder == 'peminjaman') ? 'active' : '' ?>">
                     <a href="../peminjaman/index.php" class="d-flex align-items-center px-3 py-2">
-                      <i class="fas fa-hand-holding me-2"></i>
+                      <i class="fas fa-warehouse me-2"></i>
                       <p class="mb-0">Peminjaman</p>
                     </a>
                   </li>
 
-                  <li class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], 'inventaris') !== false) ? 'active' : '' ?>">
-                    <a href="../inventaris/index.php" class="d-flex align-items-center px-3 py-2">
+                 <li class="nav-item <?= ($current_folder == 'pengembalian') ? 'active' : '' ?>">
+                    <a href="../pengembalian/index.php" class="d-flex align-items-center px-3 py-2">
                       <i class="fas fa-warehouse me-2"></i>
                       <p class="mb-0">Pengembalian</p>
                     </a>
@@ -142,49 +116,40 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
            <!-- Dropdown Manajemen Petugas -->
             <li class="nav-item">
-              <a class="d-flex align-items-center px-3 py-3 collapsed" 
-                data-bs-toggle="collapse" 
-                href="#menuPetugas" 
-                role="button" 
-                aria-expanded="<?= (
-                    strpos($_SERVER['REQUEST_URI'], 'operator') !== false || 
-                    strpos($_SERVER['REQUEST_URI'], 'level') !== false ||
-                    strpos($_SERVER['REQUEST_URI'], 'pegawai') !== false 
-                  ) ? 'true' : 'false' ?>" 
-                aria-controls="menuPetugas">
+              <a class="d-flex align-items-center px-3 py-3 collapsed"
+                data-bs-toggle="collapse"
+                href="#menuPetugas"
+                role="button"
+                aria-expanded="<?= in_array($current_folder, ['operator','pegawai','aktivitas']) ? 'true' : 'false' ?>"
+              >
                 <i class="fas fa-users-cog me-3"></i>
                 <p class="mb-0">Manajemen Petugas</p>
                 <i class="fas fa-caret-down ms-auto small rotate-icon"></i>
               </a>
 
-              <div class="collapse <?= (
-                    strpos($_SERVER['REQUEST_URI'], 'operator') !== false || 
-                    strpos($_SERVER['REQUEST_URI'], 'level') !== false ||
-                    strpos($_SERVER['REQUEST_URI'], 'pegawai') !== false 
-                  ) ? 'show' : '' ?>" id="menuPetugas">
+              <div class="collapse <?= in_array($current_folder, ['operator','pegawai','aktivitas']) ? 'show' : '' ?>" id="menuPetugas">
 
                 <ul class="nav flex-column ms-4 border-start border-light border-opacity-25 ps-3">
                   
                   <!-- Operator -->
-                  <li class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], 'operator') !== false) ? 'active' : '' ?>">
+                  <li class="nav-item <?= ($current_folder == 'operator') ? 'active' : '' ?>">
                     <a href="../operator/index.php" class="d-flex align-items-center px-3 py-2">
                       <i class="fas fa-user-tie me-2"></i>
                       <p class="mb-0">Operator</p>
                     </a>
                   </li>
 
-                  <!-- Level -->
-                  <li class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], 'level') !== false) ? 'active' : '' ?>">
-                    <a href="../level/index.php" class="d-flex align-items-center px-3 py-2">
+                  <li class="nav-item <?= ($current_folder == 'pegawai') ? 'active' : '' ?>">
+                    <a href="../pegawai/index.php" class="d-flex align-items-center px-3 py-2">
                       <i class="fas fa-layer-group me-2"></i>
-                      <p class="mb-0">Level</p>
+                      <p class="mb-0">Tabel Akun</p>
                     </a>
                   </li>
 
-                  <li class="nav-item <?= (strpos($_SERVER['REQUEST_URI'], 'pegawai') !== false) ? 'active' : '' ?>">
-                    <a href="../pegawai/index.php" class="d-flex align-items-center px-3 py-2">
+                  <li class="nav-item <?= ($current_folder == 'aktivitas') ? 'active' : '' ?>"> 
+                    <a href="../aktivitas/index.php" class="d-flex align-items-center px-3 py-2">
                       <i class="fas fa-layer-group me-2"></i>
-                      <p class="mb-0">Pegawai</p>
+                      <p class="mb-0">Aktivitas</p>
                     </a>
                   </li>
 

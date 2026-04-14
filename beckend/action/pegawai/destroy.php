@@ -15,7 +15,7 @@ if (!isset($_GET['id_pegawai']) || empty($_GET['id_pegawai'])) {
 $id_pegawai = intval($_GET['id_pegawai']);
 
 // Cek apakah data exist sebelum menghapus
-$checkQuery = "SELECT * FROM pegawai WHERE id_pegawai = $id_pegawai";
+$checkQuery = "SELECT * FROM users WHERE id_pegawai = $id_pegawai";
 $checkResult = mysqli_query($connect, $checkQuery);
 
 if (!$checkResult || mysqli_num_rows($checkResult) === 0) {
@@ -29,7 +29,7 @@ if (!$checkResult || mysqli_num_rows($checkResult) === 0) {
 }
 
 // Hapus data - GUNAKAN PREFIX
-$qDelete = "DELETE FROM pegawai WHERE id_pegawai = $id_pegawai";
+$qDelete = "DELETE FROM users WHERE id_pegawai = $id_pegawai";
 $result = mysqli_query($connect, $qDelete);
 
 if ($result) {
